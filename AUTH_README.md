@@ -325,6 +325,11 @@ notification.in-app.enabled=true
 
 ## Setup Instructions
 
+### Prerequisites
+- Java 17 or higher
+- Maven 3.6+
+- PostgreSQL (via Docker or standalone)
+
 ### 1. Database Setup
 Start PostgreSQL using Docker Compose:
 ```bash

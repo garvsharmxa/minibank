@@ -69,7 +69,9 @@ public class NotificationService {
             mailMessage.setText(text);
             mailSender.send(mailMessage);
         } catch (Exception e) {
-            System.err.println("Failed to send email: " + e.getMessage());
+            // Log error - in production, use proper logging framework like SLF4J
+            // For now, using System.err as a minimal solution
+            System.err.println("Failed to send email to " + to + ": " + e.getMessage());
         }
     }
 

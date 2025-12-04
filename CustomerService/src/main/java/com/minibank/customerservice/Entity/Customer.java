@@ -28,9 +28,9 @@ public class Customer {
     private String state;
     private String zip;
 
-    @OneToOne(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private Kyc kyc;
+    // Store only KYC ID, not Kyc entity
+    @Column(name = "kyc_id")
+    private UUID kycId;
 
     @UpdateTimestamp
     private Timestamp updatedAt;

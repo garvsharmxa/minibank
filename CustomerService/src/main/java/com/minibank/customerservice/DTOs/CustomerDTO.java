@@ -19,5 +19,6 @@ public class CustomerDTO {
     private String city;
     private String state;
     private String zip;
-    private KycDTO kyc;  // Keep this
+    private UUID kycId; // only ID, not KYC object
+
 }

@@ -70,6 +70,11 @@ public class AccountController {
         return accountService.activateAccount(id);
     }
 
+    @GetMapping("/{id}/exists")
+    public Boolean accountExists(@PathVariable UUID id) {
+        return accountService.accountExists(id);
+    }
+
     // DELETE ACCOUNT
     @DeleteMapping("/{id}")
     public String deleteAccount(@PathVariable UUID id) {

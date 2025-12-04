@@ -1,14 +1,13 @@
 package com.minibank.customerservice.Service;
 
-import com.minibank.customerservice.Config.AesEncryptor;
-import com.minibank. customerservice.Entity.Customer;
-import com.minibank.customerservice.Entity.Kyc;
+import com.minibank.customerservice.Entity.Customer;
 import com.minibank.customerservice.Exceptions.CustomerAlreadyExistsException;
-import com.minibank.customerservice. Exceptions.CustomerNotFoundException;
+import com.minibank.customerservice.Exceptions.CustomerNotFoundException;
+import com.minibank.customerservice.Feign.KycInterface;
 import com.minibank.customerservice.Repository.CustomerRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework. beans.factory.annotation.Autowired;
-import org.springframework. stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -20,6 +19,15 @@ public class CustomerService {
 
     @Autowired
     private CustomerRepository customerRepository;
+
+
+    private KycInterface kycInterface; // Feign Client
+
+    public CustomerService(KycInterface kycInterface) {
+
+        this.kycInterface = kycInterface;
+    }
+
 
     // ---------------- CREATE ----------------
     @Transactional
@@ -36,25 +44,24 @@ public class CustomerService {
 
         Customer saved = customerRepository.save(customer);
         log.info("Customer created successfully with ID: {}", saved.getId());
-
         return saved;
     }
+
 
     // ---------------- READ ALL ----------------
     public List<Customer> getAllCustomers() {
         log.info("Fetching all customers");
-        List<Customer> list = customerRepository. findAll();
-        return list. stream().map(this::decryptCustomerKyc).toList();
+        return customerRepository.findAll();
     }
+
 
     // ---------------- READ ONE ----------------
     public Customer getCustomerById(UUID id) {
         log.info("Fetching customer with ID: {}", id);
-        Customer customer = customerRepository.findById(id)
+        return customerRepository.findById(id)
                 .orElseThrow(() -> new CustomerNotFoundException("Customer not found with ID: " + id));
-
-        return decryptCustomerKyc(customer);
     }
+
 
     // ---------------- CHECK IF EXISTS ----------------
     public boolean existsById(UUID id) {
@@ -62,64 +69,64 @@ public class CustomerService {
         return customerRepository.existsById(id);
     }
 
+
     // ---------------- GET BY EMAIL ----------------
     public Customer getCustomerByEmail(String email) {
         log.info("Fetching customer with email: {}", email);
-        Customer customer = customerRepository.findByEmail(email)
+        return customerRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomerNotFoundException("Customer not found with email: " + email));
-
-        return decryptCustomerKyc(customer);
     }
+
 
     // ---------------- GET BY PHONE ----------------
     public Customer getCustomerByPhone(String phone) {
         log.info("Fetching customer with phone: {}", phone);
-        Customer customer = customerRepository.findByPhone(phone)
+        return customerRepository.findByPhone(phone)
                 .orElseThrow(() -> new CustomerNotFoundException("Customer not found with phone: " + phone));
-
-        return decryptCustomerKyc(customer);
     }
+
 
     // ---------------- FULL UPDATE (PUT) ----------------
     @Transactional
     public Customer updateCustomer(UUID id, Customer updated) {
-        log. info("Updating customer with ID: {}", id);
+        log.info("Updating customer with ID: {}", id);
 
         Customer existing = getCustomerById(id);
 
-        // Check email uniqueness if changed
+        // Email uniqueness check
         if (updated.getEmail() != null &&
-                ! existing.getEmail().equals(updated.getEmail()) &&
-                customerRepository.existsByEmail(updated. getEmail())) {
+                !existing.getEmail().equals(updated.getEmail()) &&
+                customerRepository.existsByEmail(updated.getEmail())) {
             throw new CustomerAlreadyExistsException("Email already exists: " + updated.getEmail());
         }
 
-        // Check phone uniqueness if changed
+        // Phone uniqueness check
         if (updated.getPhone() != null &&
-                !existing.getPhone(). equals(updated.getPhone()) &&
+                !existing.getPhone().equals(updated.getPhone()) &&
                 customerRepository.existsByPhone(updated.getPhone())) {
             throw new CustomerAlreadyExistsException("Phone already exists: " + updated.getPhone());
         }
 
-        // Update all fields
+        // Update fields
         existing.setName(updated.getName());
-        existing. setEmail(updated.getEmail());
+        existing.setEmail(updated.getEmail());
         existing.setPhone(updated.getPhone());
-        existing. setAddress(updated.getAddress());
+        existing.setAddress(updated.getAddress());
         existing.setCity(updated.getCity());
-        existing. setState(updated.getState());
+        existing.setState(updated.getState());
         existing.setZip(updated.getZip());
 
-        // Don't update KYC here - use KycService for that
-        if (updated.getKyc() != null) {
-            existing.setKyc(updated. getKyc());
+        // Update KYC ID only if provided
+        if (updated.getKycId() != null) {
+            existing.setKycId(updated.getKycId());
         }
 
-        Customer saved = customerRepository. save(existing);
-        log. info("Customer updated successfully with ID: {}", saved.getId());
+        Customer saved = customerRepository.save(existing);
+        log.info("Customer updated successfully with ID: {}", saved.getId());
 
-        return decryptCustomerKyc(saved);
+        return saved;
     }
+
 
     // ---------------- PARTIAL UPDATE (PATCH) ----------------
     @Transactional
@@ -128,51 +135,36 @@ public class CustomerService {
 
         Customer existing = getCustomerById(id);
 
-        // Check email uniqueness if provided and changed
+        // Email uniqueness
         if (partial.getEmail() != null &&
-                !existing.getEmail().equals(partial. getEmail()) &&
+                !existing.getEmail().equals(partial.getEmail()) &&
                 customerRepository.existsByEmail(partial.getEmail())) {
             throw new CustomerAlreadyExistsException("Email already exists: " + partial.getEmail());
         }
 
-        // Check phone uniqueness if provided and changed
-        if (partial. getPhone() != null &&
+        // Phone uniqueness
+        if (partial.getPhone() != null &&
                 !existing.getPhone().equals(partial.getPhone()) &&
                 customerRepository.existsByPhone(partial.getPhone())) {
             throw new CustomerAlreadyExistsException("Phone already exists: " + partial.getPhone());
         }
 
         // Update only provided fields
-        if (partial.getName() != null) {
-            existing.setName(partial.getName());
-        }
-        if (partial.getEmail() != null) {
-            existing.setEmail(partial.getEmail());
-        }
-        if (partial. getPhone() != null) {
-            existing.setPhone(partial. getPhone());
-        }
-        if (partial.getAddress() != null) {
-            existing.setAddress(partial.getAddress());
-        }
-        if (partial. getCity() != null) {
-            existing.setCity(partial. getCity());
-        }
-        if (partial.getState() != null) {
-            existing.setState(partial.getState());
-        }
-        if (partial.getZip() != null) {
-            existing.setZip(partial.getZip());
-        }
-        if (partial.getKyc() != null) {
-            existing.setKyc(partial.getKyc());
-        }
+        if (partial.getName() != null) existing.setName(partial.getName());
+        if (partial.getEmail() != null) existing.setEmail(partial.getEmail());
+        if (partial.getPhone() != null) existing.setPhone(partial.getPhone());
+        if (partial.getAddress() != null) existing.setAddress(partial.getAddress());
+        if (partial.getCity() != null) existing.setCity(partial.getCity());
+        if (partial.getState() != null) existing.setState(partial.getState());
+        if (partial.getZip() != null) existing.setZip(partial.getZip());
+        if (partial.getKycId() != null) existing.setKycId(partial.getKycId());
 
         Customer saved = customerRepository.save(existing);
         log.info("Customer patched successfully with ID: {}", saved.getId());
 
-        return decryptCustomerKyc(saved);
+        return saved;
     }
+
 
     // ---------------- DELETE ----------------
     @Transactional
@@ -181,52 +173,35 @@ public class CustomerService {
 
         Customer customer = getCustomerById(id);
 
-        // Optional: Check if customer has related data
-        if (customer.getKyc() != null) {
-            log.warn("Deleting customer with existing KYC data");
-        }
-
-        customerRepository. delete(customer);
-        log.info("Customer deleted successfully with ID: {}", id);
+        log.warn("Removing customer {}", id);
+        customerRepository.delete(customer);
     }
 
-    // ---------------- DECRYPT CUSTOMER'S KYC FIELDS ----------------
-    private Customer decryptCustomerKyc(Customer customer) {
-        if (customer != null && customer.getKyc() != null) {
-            Kyc kyc = customer.getKyc();
 
-            try {
-                if (kyc.getPanNumber() != null && ! kyc.getPanNumber().isEmpty()) {
-                    kyc. setPanNumber(AesEncryptor.decrypt(kyc.getPanNumber()));
-                }
-            } catch (Exception e) {
-                log.error("Error decrypting PAN number for customer: {}", customer.getId(), e);
-                kyc.setPanNumber("ERROR_DECRYPTING");
-            }
+    @Transactional
+    public void updateKycId(UUID customerId, UUID kycId) {
 
-            try {
-                if (kyc.getAadharNumber() != null && ! kyc.getAadharNumber().isEmpty()) {
-                    kyc.setAadharNumber(AesEncryptor.decrypt(kyc.getAadharNumber()));
-                }
-            } catch (Exception e) {
-                log.error("Error decrypting Aadhar number for customer: {}", customer.getId(), e);
-                kyc.setAadharNumber("ERROR_DECRYPTING");
-            }
-        }
-        return customer;
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new CustomerNotFoundException("Customer not found with ID: " + customerId));
+
+        customer.setKycId(kycId);
+        customerRepository.save(customer);
     }
+
 
     // ---------------- VALIDATE CUSTOMER FOR ACCOUNT CREATION ----------------
     public boolean canCreateAccount(UUID customerId) {
         Customer customer = getCustomerById(customerId);
 
-        // Check if customer has KYC and it's verified
-        if (customer.getKyc() == null) {
-            log.warn("Customer {} does not have KYC information", customerId);
+        if (customer.getKycId() == null) {
+            log.warn("Customer {} does not have KYC ID", customerId);
             return false;
         }
 
-        if (!customer.getKyc(). isVerified()) {
+        // Call KYC service to check verification
+        Boolean isVerified = kycInterface.isKycVerified(customer.getKycId());
+
+        if (Boolean.FALSE.equals(isVerified)) {
             log.warn("Customer {} KYC is not verified", customerId);
             return false;
         }

@@ -38,6 +38,15 @@ public class CustomerController {
                 .toList();
     }
 
+    @PutMapping("/{customerId}/kyc/{kycId}")
+    public ResponseEntity<String> updateCustomerKycId(
+            @PathVariable UUID customerId,
+            @PathVariable UUID kycId
+    ) {
+        customerService.updateKycId(customerId, kycId);
+        return ResponseEntity.ok("KYC ID updated successfully");
+    }
+
     // GET CUSTOMER BY ID
     @GetMapping("/{id}")
     public CustomerDTO getCustomerById(@PathVariable UUID id) {

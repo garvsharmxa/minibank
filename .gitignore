@@ -1,0 +1,19 @@
+# Application properties with secrets
+**/application.properties
+
+# Environment files
+.env
+*.env
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Build
+target/
+build/
+*.class
+
+# OS
+.DS_Store

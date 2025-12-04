@@ -12,7 +12,7 @@ public class CustomerClient {
     private final WebClient webClient;
 
     public CustomerClient(@Value("${customer.service.url:http://localhost:8082}") String customerServiceUrl) {
-        this. webClient = WebClient.builder()
+        this.webClient = WebClient.builder()
                 .baseUrl(customerServiceUrl)
                 .build();
     }
@@ -33,7 +33,7 @@ public class CustomerClient {
     public CustomerDTO getCustomerDetails(UUID customerId) {
         return webClient.get()
                 .uri("/api/customers/{customerId}", customerId)
-                . retrieve()
+                .retrieve()
                 .bodyToMono(CustomerDTO.class)
                 .block();
     }

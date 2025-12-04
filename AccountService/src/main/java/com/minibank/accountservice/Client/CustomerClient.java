@@ -11,8 +11,8 @@ public class CustomerClient {
 
     private final WebClient webClient;
 
-    public CustomerClient(@Value("${customer. service.url:http://localhost:8081}") String customerServiceUrl) {
-        this. webClient = WebClient.builder()
+    public CustomerClient(@Value("${customer.service.url:http://localhost:8082}") String customerServiceUrl) {
+        this.webClient = WebClient.builder()
                 .baseUrl(customerServiceUrl)
                 .build();
     }
@@ -20,7 +20,7 @@ public class CustomerClient {
     public boolean customerExists(UUID customerId) {
         try {
             Boolean exists = webClient.get()
-                    .uri("/api/customers/{customerId}/exists", customerId)
+                    .uri("/customers/{customerId}/exists", customerId)
                     .retrieve()
                     .bodyToMono(Boolean.class)
                     .block();
@@ -32,8 +32,8 @@ public class CustomerClient {
 
     public CustomerDTO getCustomerDetails(UUID customerId) {
         return webClient.get()
-                .uri("/api/customers/{customerId}", customerId)
-                . retrieve()
+                .uri("/customers/{customerId}", customerId)
+                .retrieve()
                 .bodyToMono(CustomerDTO.class)
                 .block();
     }

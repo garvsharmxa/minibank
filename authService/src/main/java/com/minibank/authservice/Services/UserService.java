@@ -42,15 +42,20 @@ public class UserService {
      */
     public UserResponse register(RegisterRequest registerRequest) {
         // Check if user already exists
-        Users existingUser = userRepository.findByUsername(registerRequest.getUsername());
-        if (existingUser != null) {
+        if (userRepository.existsByUsername(registerRequest.getUsername())) {
             throw new UserAlreadyExistsException("Username already exists: " + registerRequest.getUsername());
+        }
+        
+        if (userRepository.existsByEmail(registerRequest.getEmail())) {
+            throw new UserAlreadyExistsException("Email already exists: " + registerRequest.getEmail());
         }
 
         // Create new user
         Users user = new Users();
         user.setUsername(registerRequest.getUsername());
+        user.setEmail(registerRequest.getEmail());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+        user.setEnabled(true);
         
         Users savedUser = userRepository.save(user);
         

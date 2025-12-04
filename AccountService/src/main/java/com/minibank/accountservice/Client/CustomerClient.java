@@ -11,7 +11,7 @@ public class CustomerClient {
 
     private final WebClient webClient;
 
-    public CustomerClient(@Value("${customer. service.url:http://localhost:8081}") String customerServiceUrl) {
+    public CustomerClient(@Value("${customer.service.url:http://localhost:8082}") String customerServiceUrl) {
         this. webClient = WebClient.builder()
                 .baseUrl(customerServiceUrl)
                 .build();

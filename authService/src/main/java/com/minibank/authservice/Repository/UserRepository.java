@@ -2,7 +2,15 @@ package com.minibank.authservice.Repository;
 
 import com.minibank.authservice.Entity.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface UserRepository extends JpaRepository<Users, Long> {
-    Users findByUsername(String username);
+import java.util.Optional;
+import java.util.UUID;
+
+@Repository
+public interface UserRepository extends JpaRepository<Users, UUID> {
+    Optional<Users> findByUsername(String username);
+    Optional<Users> findByEmail(String email);
+    boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
 }

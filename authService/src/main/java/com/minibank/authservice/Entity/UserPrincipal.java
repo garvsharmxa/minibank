@@ -5,8 +5,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class UserPrincipal implements UserDetails {
 
@@ -18,18 +18,20 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // If you add roles later, return roles here
-        return Collections.singleton( new SimpleGrantedAuthority("USER"));
+        // Return roles from database, prefixed with ROLE_
+        return user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+                .collect(Collectors.toList());
     }
 
     @Override
     public String getPassword() {
-        return user.getPassword();  // return real password
+        return user.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return user.getUsername(); // return real username
+        return user.getUsername();
     }
 
     @Override
@@ -49,6 +51,10 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return user.getEnabled();
+    }
+
+    public UUID getUserId() {
+        return user.getId();
     }
 }

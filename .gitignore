@@ -1,5 +1,5 @@
 # Application properties with secrets
-**/application.properties
+# **/application.properties  # Commented out to allow committing configuration files
 
 # Environment files
 .env

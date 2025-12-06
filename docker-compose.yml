@@ -1,8 +1,20 @@
 version: '3.8'
 
+# YAML anchors for reuse
+x-postgres-common: &postgres-common
+  image: postgres:latest
+  environment:
+    PGDATA: /var/lib/postgresql/data/pgdata
+  networks:
+    - minibank-network
+
 services:
+
+  # --------------------
+  # AUTH SERVICE DB
+  # --------------------
   auth-postgres:
-    image: postgres:latest
+    <<: *postgres-common
     container_name: auth-postgres
     environment:
       POSTGRES_DB: auth_db
@@ -13,44 +25,96 @@ services:
       - "5433:5432"
     volumes:
       - auth-data:/var/lib/postgresql/data
-    networks:
-      - minibank-network
 
+  # --------------------
+  # CUSTOMER SERVICE DB
+  # --------------------
   customer-postgres:
-    image: postgres:latest
+    <<: *postgres-common
     container_name: customer-postgres
     environment:
       POSTGRES_DB: customer_db
       POSTGRES_USER: customeruser
       POSTGRES_PASSWORD: customerpass123
-      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5434:5432"
     volumes:
       - customer-data:/var/lib/postgresql/data
-    networks:
-      - minibank-network
 
+  # --------------------
+  # ACCOUNT SERVICE DB
+  # --------------------
   account-postgres:
-    image: postgres:latest
+    <<: *postgres-common
     container_name: account-postgres
     environment:
       POSTGRES_DB: account_db
       POSTGRES_USER: accountuser
       POSTGRES_PASSWORD: accountpass123
-      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5435:5432"
     volumes:
       - account-data:/var/lib/postgresql/data
-    networks:
-      - minibank-network
 
+  # --------------------
+  # KYC SERVICE DB
+  # --------------------
+  kyc-postgres:
+    <<: *postgres-common
+    container_name: kyc-postgres
+    environment:
+      POSTGRES_DB: kyc_db
+      POSTGRES_USER: kycuser
+      POSTGRES_PASSWORD: kycpass123
+    ports:
+      - "5436:5432"
+    volumes:
+      - kyc-data:/var/lib/postgresql/data
+
+  # --------------------
+  # CARD SERVICE DB
+  # --------------------
+  card-postgres:
+    <<: *postgres-common
+    container_name: card-postgres
+    environment:
+      POSTGRES_DB: card_db
+      POSTGRES_USER: carduser
+      POSTGRES_PASSWORD: cardpass123
+    ports:
+      - "5437:5432"
+    volumes:
+      - card-data:/var/lib/postgresql/data
+
+  # --------------------
+  # TRANSACTION SERVICE DB
+  # --------------------
+  transaction-postgres:
+    <<: *postgres-common
+    container_name: transaction-postgres
+    environment:
+      POSTGRES_DB: transaction_db
+      POSTGRES_USER: transactionuser
+      POSTGRES_PASSWORD: transactionpass123
+    ports:
+      - "5438:5432"
+    volumes:
+      - transaction-data:/var/lib/postgresql/data
+
+# -----------------------------------
+# VOLUMES FOR EACH MICROSERVICE DB
+# -----------------------------------
 volumes:
   auth-data:
   customer-data:
   account-data:
+  kyc-data:
+  card-data:
+  transaction-data:
 
+# -----------------------------------
+# NETWORK (COMMON)
+# -----------------------------------
 networks:
   minibank-network:
     driver: bridge

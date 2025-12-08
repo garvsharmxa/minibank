@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 public class EmailNotificationConsumer {
 
     private final NotificationService notificationService;
+    
+    private static final String DEFAULT_FALLBACK_EMAIL = "noreply@minibank.com";
 
     @KafkaListener(topics = "email-notifications", groupId = "auth-service-email-group")
     public void consumeEmailNotification(JsonNode event) {
@@ -21,7 +23,9 @@ public class EmailNotificationConsumer {
             log.info("Received email notification event: {}", event);
 
             String eventType = event.has("eventType") ? event.get("eventType").asText() : "";
-            String email = event.has("email") ? event.get("email").asText() : null;
+            String email = (event.has("email") && event.get("email") != null && !event.get("email").isNull()) 
+                    ? event.get("email").asText() 
+                    : DEFAULT_FALLBACK_EMAIL;
 
             // Build notification DTO
             NotificationDto notification = new NotificationDto();
@@ -34,16 +38,16 @@ public class EmailNotificationConsumer {
                         notification.setSubject("Account Created Successfully");
                         notification.setMessage("Your account has been created successfully. Account Number: " +
                                 event.get("accountNumber").asText());
-                        notification.setRecipient(email != null ? email : "customer@example.com");
+                        notification.setRecipient(email);
                     } else if (event.has("customerId")) {
                         notification.setSubject("Customer Registration Successful");
                         notification.setMessage("Welcome! Your customer profile has been created successfully.");
-                        notification.setRecipient(email != null ? email : event.get("email").asText());
+                        notification.setRecipient(email);
                     } else if (event.has("cardId")) {
                         notification.setSubject("Card Created Successfully");
                         notification.setMessage("Your new card has been created. Card Number: " +
                                 event.get("cardNumber").asText());
-                        notification.setRecipient(email != null ? email : "customer@example.com");
+                        notification.setRecipient(email);
                     }
                     break;
 
@@ -51,27 +55,27 @@ public class EmailNotificationConsumer {
                     notification.setSubject("Deposit Transaction Successful");
                     notification.setMessage(String.format("Amount of $%.2f has been deposited to your account.",
                             event.get("amount").asDouble()));
-                    notification.setRecipient(email != null ? email : "customer@example.com");
+                    notification.setRecipient(email);
                     break;
 
                 case "WITHDRAW":
                     notification.setSubject("Withdrawal Transaction Successful");
                     notification.setMessage(String.format("Amount of $%.2f has been withdrawn from your account.",
                             event.get("amount").asDouble()));
-                    notification.setRecipient(email != null ? email : "customer@example.com");
+                    notification.setRecipient(email);
                     break;
 
                 case "COMPLETED":
                     notification.setSubject("Transaction Completed");
                     notification.setMessage(String.format("Your transaction of $%.2f has been completed successfully.",
                             event.get("amount").asDouble()));
-                    notification.setRecipient(email != null ? email : "customer@example.com");
+                    notification.setRecipient(email);
                     break;
 
                 case "FAILED":
                     notification.setSubject("Transaction Failed");
                     notification.setMessage("Your recent transaction has failed. Please contact support if you need assistance.");
-                    notification.setRecipient(email != null ? email : "customer@example.com");
+                    notification.setRecipient(email);
                     break;
 
                 default:

@@ -1,0 +1,1139 @@
+{
+	"info": {
+		"_postman_id": "minibank-collection-v1",
+		"name": "Minibank Microservices API Collection",
+		"description": "Complete API collection for Minibank microservices with JWT authentication, covering Auth, Customer, Account, Transaction, Card, and KYC services",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost",
+			"type": "string"
+		},
+		{
+			"key": "auth_port",
+			"value": "8081",
+			"type": "string"
+		},
+		{
+			"key": "customer_port",
+			"value": "8082",
+			"type": "string"
+		},
+		{
+			"key": "account_port",
+			"value": "8083",
+			"type": "string"
+		},
+		{
+			"key": "card_port",
+			"value": "8085",
+			"type": "string"
+		},
+		{
+			"key": "transaction_port",
+			"value": "8086",
+			"type": "string"
+		},
+		{
+			"key": "kyc_port",
+			"value": "8084",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refresh_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "customer_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "account_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "card_id",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Auth Service",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"user_id\", jsonData.data.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser\",\n    \"email\": \"testuser@example.com\",\n    \"password\": \"Test@1234\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}:{{auth_port}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{auth_port}}",
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a new user. Default role is CUSTOMER."
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"jwt_token\", jsonData.data.accessToken);",
+									"    pm.collectionVariables.set(\"refresh_token\", jsonData.data.refreshToken);",
+									"    console.log(\"JWT Token saved:\", jsonData.data.accessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser\",\n    \"password\": \"Test@1234\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}:{{auth_port}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{auth_port}}",
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with username and password. Returns JWT access token and refresh token."
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"jwt_token\", jsonData.data.accessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refreshToken\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}:{{auth_port}}/auth/refresh",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{auth_port}}",
+							"path": [
+								"auth",
+								"refresh"
+							]
+						},
+						"description": "Refresh access token using refresh token."
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"currentPassword\": \"Test@1234\",\n    \"newPassword\": \"NewTest@1234\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}:{{auth_port}}/auth/change-password",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{auth_port}}",
+							"path": [
+								"auth",
+								"change-password"
+							]
+						},
+						"description": "Change user password. Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refreshToken\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}:{{auth_port}}/auth/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{auth_port}}",
+							"path": [
+								"auth",
+								"logout"
+							]
+						},
+						"description": "Logout and revoke refresh token."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Customer Service",
+			"item": [
+				{
+					"name": "Create Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"customer_id\", jsonData.id);",
+									"    console.log(\"Customer ID saved:\", jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"phone\": \"+1234567890\",\n    \"dateOfBirth\": \"1990-01-01\",\n    \"address\": \"123 Main St, City, Country\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}:{{customer_port}}/customers",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{customer_port}}",
+							"path": [
+								"customers"
+							]
+						},
+						"description": "Create a new customer. Requires ADMIN or CUSTOMER role."
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Customers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{customer_port}}/customers",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{customer_port}}",
+							"path": [
+								"customers"
+							]
+						},
+						"description": "Get all customers. Requires ADMIN role."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Customer By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{customer_port}}/customers/{{customer_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{customer_port}}",
+							"path": [
+								"customers",
+								"{{customer_id}}"
+							]
+						},
+						"description": "Get customer by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Customer By Email",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{customer_port}}/customers/email/john.doe@example.com",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{customer_port}}",
+							"path": [
+								"customers",
+								"email",
+								"john.doe@example.com"
+							]
+						},
+						"description": "Get customer by email address."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Customer",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe Updated\",\n    \"email\": \"john.doe@example.com\",\n    \"phone\": \"+1234567890\",\n    \"address\": \"456 New St, City, Country\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}:{{customer_port}}/customers/{{customer_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{customer_port}}",
+							"path": [
+								"customers",
+								"{{customer_id}}"
+							]
+						},
+						"description": "Update customer information."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Customer",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{customer_port}}/customers/{{customer_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{customer_port}}",
+							"path": [
+								"customers",
+								"{{customer_id}}"
+							]
+						},
+						"description": "Delete customer. Requires ADMIN role."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Account Service",
+			"item": [
+				{
+					"name": "Create Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"account_id\", jsonData.id);",
+									"    console.log(\"Account ID saved:\", jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customerId\": \"{{customer_id}}\",\n    \"accountType\": \"SAVINGS\",\n    \"accountBalance\": 1000.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}:{{account_port}}/accounts",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{account_port}}",
+							"path": [
+								"accounts"
+							]
+						},
+						"description": "Create a new account. Requires ADMIN or CUSTOMER role. Customer must have verified KYC."
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Accounts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{account_port}}/accounts",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{account_port}}",
+							"path": [
+								"accounts"
+							]
+						},
+						"description": "Get all accounts. Requires ADMIN role."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Account By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{account_port}}/accounts/{{account_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{account_port}}",
+							"path": [
+								"accounts",
+								"{{account_id}}"
+							]
+						},
+						"description": "Get account by ID. Requires ADMIN or CUSTOMER role."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Account By Customer ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{account_port}}/accounts/customer/{{customer_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{account_port}}",
+							"path": [
+								"accounts",
+								"customer",
+								"{{customer_id}}"
+							]
+						},
+						"description": "Get account by customer ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Deposit",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{account_port}}/accounts/{{account_id}}/deposit?amount=500",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{account_port}}",
+							"path": [
+								"accounts",
+								"{{account_id}}",
+								"deposit"
+							],
+							"query": [
+								{
+									"key": "amount",
+									"value": "500"
+								}
+							]
+						},
+						"description": "Deposit money into account."
+					},
+					"response": []
+				},
+				{
+					"name": "Withdraw",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{account_port}}/accounts/{{account_id}}/withdraw?amount=200",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{account_port}}",
+							"path": [
+								"accounts",
+								"{{account_id}}",
+								"withdraw"
+							],
+							"query": [
+								{
+									"key": "amount",
+									"value": "200"
+								}
+							]
+						},
+						"description": "Withdraw money from account."
+					},
+					"response": []
+				},
+				{
+					"name": "Block Account",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{account_port}}/accounts/{{account_id}}/block",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{account_port}}",
+							"path": [
+								"accounts",
+								"{{account_id}}",
+								"block"
+							]
+						},
+						"description": "Block an account."
+					},
+					"response": []
+				},
+				{
+					"name": "Activate Account",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{account_port}}/accounts/{{account_id}}/activate",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{account_port}}",
+							"path": [
+								"accounts",
+								"{{account_id}}",
+								"activate"
+							]
+						},
+						"description": "Activate a blocked account."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Account",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{account_port}}/accounts/{{account_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{account_port}}",
+							"path": [
+								"accounts",
+								"{{account_id}}"
+							]
+						},
+						"description": "Delete account. Requires ADMIN role. Account must have zero balance."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Transaction Service",
+			"item": [
+				{
+					"name": "Create Transaction",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"transactionType\": \"DEPOSIT\",\n    \"amount\": 500.00,\n    \"description\": \"Initial deposit\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}:{{transaction_port}}/transactions/create/{{account_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{transaction_port}}",
+							"path": [
+								"transactions",
+								"create",
+								"{{account_id}}"
+							]
+						},
+						"description": "Create a new transaction. Requires ADMIN or CUSTOMER role."
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Transactions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{transaction_port}}/transactions/all",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{transaction_port}}",
+							"path": [
+								"transactions",
+								"all"
+							]
+						},
+						"description": "Get all transactions. Requires ADMIN role."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Transaction By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{transaction_port}}/transactions/{transaction_id}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{transaction_port}}",
+							"path": [
+								"transactions",
+								"{transaction_id}"
+							]
+						},
+						"description": "Get transaction by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Transactions By Account ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{transaction_port}}/transactions/account/{{account_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{transaction_port}}",
+							"path": [
+								"transactions",
+								"account",
+								"{{account_id}}"
+							]
+						},
+						"description": "Get all transactions for an account."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Transactions By Customer ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{transaction_port}}/transactions/customer/{{customer_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{transaction_port}}",
+							"path": [
+								"transactions",
+								"customer",
+								"{{customer_id}}"
+							]
+						},
+						"description": "Get all transactions for a customer."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Transactions By Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{transaction_port}}/transactions/status/SUCCESS",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{transaction_port}}",
+							"path": [
+								"transactions",
+								"status",
+								"SUCCESS"
+							]
+						},
+						"description": "Get transactions by status (SUCCESS, FAILED, PENDING)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Card Service",
+			"item": [
+				{
+					"name": "Create Card",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"card_id\", jsonData.id);",
+									"    console.log(\"Card ID saved:\", jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customerId\": \"{{customer_id}}\",\n    \"accountId\": \"{{account_id}}\",\n    \"cardType\": \"DEBIT\",\n    \"cardPin\": \"1234\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}:{{card_port}}/cards/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{card_port}}",
+							"path": [
+								"cards",
+								"create"
+							]
+						},
+						"description": "Create a new card. Requires ADMIN or CUSTOMER role."
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Cards",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{card_port}}/cards/all",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{card_port}}",
+							"path": [
+								"cards",
+								"all"
+							]
+						},
+						"description": "Get all cards. Requires ADMIN role."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Card By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{card_port}}/cards/{{card_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{card_port}}",
+							"path": [
+								"cards",
+								"{{card_id}}"
+							]
+						},
+						"description": "Get card by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Cards By Customer",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{card_port}}/cards/customer/{{customer_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{card_port}}",
+							"path": [
+								"cards",
+								"customer",
+								"{{customer_id}}"
+							]
+						},
+						"description": "Get all cards for a customer."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Active Cards",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{card_port}}/cards/active",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{card_port}}",
+							"path": [
+								"cards",
+								"active"
+							]
+						},
+						"description": "Get all active cards."
+					},
+					"response": []
+				},
+				{
+					"name": "Block Card",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{card_port}}/cards/{{card_id}}/block",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{card_port}}",
+							"path": [
+								"cards",
+								"{{card_id}}",
+								"block"
+							]
+						},
+						"description": "Block a card."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Card PIN",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{card_port}}/cards/{{card_id}}/update-pin?newPin=5678",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{card_port}}",
+							"path": [
+								"cards",
+								"{{card_id}}",
+								"update-pin"
+							],
+							"query": [
+								{
+									"key": "newPin",
+									"value": "5678"
+								}
+							]
+						},
+						"description": "Update card PIN."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Card Status",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{card_port}}/cards/{{card_id}}/status?status=ACTIVE",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{card_port}}",
+							"path": [
+								"cards",
+								"{{card_id}}",
+								"status"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "ACTIVE"
+								}
+							]
+						},
+						"description": "Update card status (ACTIVE, BLOCKED, EXPIRED)."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Card",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{card_port}}/cards/{{card_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{card_port}}",
+							"path": [
+								"cards",
+								"{{card_id}}"
+							]
+						},
+						"description": "Delete card. Requires ADMIN role."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "KYC Service",
+			"item": [
+				{
+					"name": "Submit KYC",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "multipart/form-data"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "customerId",
+									"value": "{{customer_id}}",
+									"type": "text"
+								},
+								{
+									"key": "idProof",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "addressProof",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}:{{kyc_port}}/kyc/submit",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{kyc_port}}",
+							"path": [
+								"kyc",
+								"submit"
+							]
+						},
+						"description": "Submit KYC documents for verification."
+					},
+					"response": []
+				},
+				{
+					"name": "Get KYC Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{kyc_port}}/kyc/customer/{{customer_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{kyc_port}}",
+							"path": [
+								"kyc",
+								"customer",
+								"{{customer_id}}"
+							]
+						},
+						"description": "Get KYC status for a customer."
+					},
+					"response": []
+				},
+				{
+					"name": "Verify KYC",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{kyc_port}}/kyc/verify/{{customer_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{kyc_port}}",
+							"path": [
+								"kyc",
+								"verify",
+								"{{customer_id}}"
+							]
+						},
+						"description": "Verify KYC (admin only)."
+					},
+					"response": []
+				},
+				{
+					"name": "Check If KYC Verified",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}:{{kyc_port}}/kyc/verified/{{customer_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"port": "{{kyc_port}}",
+							"path": [
+								"kyc",
+								"verified",
+								"{{customer_id}}"
+							]
+						},
+						"description": "Check if customer KYC is verified."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

@@ -1,4 +1,4 @@
-# MiniBank
+# BankSphere
 
 MiniBank is a simple, microservices-based banking system implemented in Java.  
 It provides core banking functionality such as user account management, transactions, and service-oriented architecture — designed to demonstrate a modular and extensible banking backend.

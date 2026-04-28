@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class NotificationService {
@@ -88,7 +89,7 @@ public class NotificationService {
     }
 
     @Transactional
-    public void markAsRead(Long notificationId) {
+    public void markAsRead(UUID notificationId) {
         notificationRepository.findById(notificationId).ifPresent(notification -> {
             notification.setIsRead(true);
             notificationRepository.save(notification);

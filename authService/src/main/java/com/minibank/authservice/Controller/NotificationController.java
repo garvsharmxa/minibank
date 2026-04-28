@@ -17,6 +17,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -92,7 +93,7 @@ public class NotificationController {
     }
 
     @PutMapping("/{id}/read")
-    public ResponseEntity<ApiResponse<Object>> markAsRead(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Object>> markAsRead(@PathVariable UUID id) {
         notificationService.markAsRead(id);
 
         ApiResponse<Object> response = ApiResponse.success(

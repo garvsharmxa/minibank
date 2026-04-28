@@ -1,12 +1,12 @@
-package com.minibank.customerservice. Controller;
+package com.minibank.customerservice.Controller;
 
 import com.minibank.customerservice.DTOs.CustomerDTO;
 import com.minibank.customerservice.Entity.Customer;
 import com.minibank.customerservice.Mapper.CustomerMapper;
 import com.minibank.customerservice.Service.CustomerService;
 import lombok.RequiredArgsConstructor;
-import org.springframework. http.HttpStatus;
-import org.springframework. http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -101,20 +101,20 @@ public class CustomerController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteCustomer(@PathVariable UUID id) {
         customerService.deleteCustomer(id);
-        return ResponseEntity. ok("Customer deleted successfully");
+        return ResponseEntity.ok("Customer deleted successfully");
     }
 
     // GET CUSTOMER BY EMAIL
     @GetMapping("/email/{email}")
     public ResponseEntity<CustomerDTO> getCustomerByEmail(@PathVariable String email) {
         Customer customer = customerService.getCustomerByEmail(email);
-        return ResponseEntity.ok(CustomerMapper. toDto(customer));
+        return ResponseEntity.ok(CustomerMapper.toDto(customer));
     }
 
     // GET CUSTOMER BY PHONE
     @GetMapping("/phone/{phone}")
     public ResponseEntity<CustomerDTO> getCustomerByPhone(@PathVariable String phone) {
-        Customer customer = customerService. getCustomerByPhone(phone);
+        Customer customer = customerService.getCustomerByPhone(phone);
         return ResponseEntity.ok(CustomerMapper.toDto(customer));
     }
 }

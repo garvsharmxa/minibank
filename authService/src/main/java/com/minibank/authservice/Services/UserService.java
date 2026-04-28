@@ -110,6 +110,10 @@ public class UserService {
                 // Create and save refresh token
                 RefreshToken refreshToken = refreshTokenService.createRefreshToken(loginRequest.getUsername());
 
+                // Fetch user to get the UUID
+                Users user = userRepository.findByUsername(loginRequest.getUsername())
+                        .orElseThrow(() -> new InvalidCredentialsException("User not found"));
+
                 // Publish successful login event
                 eventPublisher.publishEvent(new LoginEvent(
                         loginRequest.getUsername(),
@@ -118,13 +122,14 @@ public class UserService {
                         "Successful login"
                 ));
 
-                return new AuthResponse(
-                        accessToken,
-                        refreshToken.getToken(),
-                        loginRequest.getUsername(),
-                        "Bearer",
-                        ACCESS_TOKEN_EXPIRY_MS
-                );
+                AuthResponse response = new AuthResponse();
+                response.setAccessToken(accessToken);
+                response.setRefreshToken(refreshToken.getToken());
+                response.setUsername(loginRequest.getUsername());
+                response.setUserId(user.getId().toString());
+                response.setTokenType("Bearer");
+                response.setExpiresIn(ACCESS_TOKEN_EXPIRY_MS);
+                return response;
             }
 
             throw new InvalidCredentialsException("Authentication failed");
@@ -156,13 +161,14 @@ public class UserService {
 
             String newAccessToken = jwtUtil.generateToken(user.getUsername(), roles);
             
-            return new AuthResponse(
-                    newAccessToken,
-                    refreshTokenStr,
-                    user.getUsername(),
-                    "Bearer",
-                    ACCESS_TOKEN_EXPIRY_MS
-            );
+            AuthResponse response = new AuthResponse();
+            response.setAccessToken(newAccessToken);
+            response.setRefreshToken(refreshTokenStr);
+            response.setUsername(user.getUsername());
+            response.setUserId(user.getId().toString());
+            response.setTokenType("Bearer");
+            response.setExpiresIn(ACCESS_TOKEN_EXPIRY_MS);
+            return response;
         } catch (Exception e) {
             throw new InvalidTokenException("Invalid or expired refresh token: " + e.getMessage());
         }

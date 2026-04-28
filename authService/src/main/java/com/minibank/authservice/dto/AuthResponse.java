@@ -11,6 +11,7 @@ public class AuthResponse {
     private String accessToken;
     private String refreshToken;
     private String username;
+    private String userId;
     private String tokenType = "Bearer";
     private Long expiresIn;
 }

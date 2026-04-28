@@ -1,8 +1,6 @@
-version: '3.8'
-
 # YAML anchors for reuse
 x-postgres-common: &postgres-common
-  image: postgres:latest
+  image: postgres:16
   environment:
     PGDATA: /var/lib/postgresql/data/pgdata
   networks:

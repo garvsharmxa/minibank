@@ -128,6 +128,23 @@ public class KycController {
         return ResponseEntity.ok(kycService.getKycByAadhaarNumber(aadhaarNumber));
     }
 
+    // GET KYC STATUS FOR CUSTOMER (lightweight for mobile)
+    @GetMapping("/customer/{customerId}/status")
+    public ResponseEntity<java.util.Map<String, Object>> getKycStatusForCustomer(@PathVariable UUID customerId) {
+        java.util.Map<String, Object> status = new java.util.HashMap<>();
+        try {
+            Kyc kyc = kycService.getKycByCustomerId(customerId);
+            status.put("exists", true);
+            status.put("verified", kyc.isVerified());
+            status.put("kycId", kyc.getId().toString());
+        } catch (KycException e) {
+            status.put("exists", false);
+            status.put("verified", false);
+            status.put("kycId", null);
+        }
+        return ResponseEntity.ok(status);
+    }
+
     // DELETE KYC
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteKyc(@PathVariable UUID id) {
